@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Upload to S3</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(147, 134, 134, 0.2);
+            text-align: center;
+            width: 350px;
+            transition: transform 0.2s;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 1.8rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label.file-label {
+            display: block;
+            padding: 15px 20px;
+            border: 2px dashed #6a11cb;
+            border-radius: 10px;
+            color: #6a11cb;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+
+        button {
+            background: #6a11cb;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            min-height: 24px;
+            color: #333;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="upload-card">
+        <h2>Upload File to S3</h2>
+
+        <label class="file-label" for="fileInput" id="fileLabel">Choose a file</label>
+        <input type="file" id="fileInput">
+
+        <button id="uploadBtn">Upload</button>
+
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById("fileInput");
+        const fileLabel = document.getElementById("fileLabel");
+        const statusEl = document.getElementById("status");
+
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files.length > 0) {
+                fileLabel.textContent = `${fileInput.files[0].name}`;
+            } else {
+                fileLabel.textContent = "Choose a file";
+            }
+        });
+
+        document.getElementById("uploadBtn").addEventListener("click", async () => {
+            const file = document.getElementById("fileInput").files[0];
+            if (!file) { alert("Please choose a file"); return; }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const statusEl = document.getElementById("status");
+            statusEl.innerText = "Uploading...";
+
+            try {
+                const res = await fetch("http://localhost:3000/upload", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const text = await res.text();
+                console.log("Response from server:", text);
+                statusEl.innerText = text;
+            } catch (err) {
+                console.error("Fetch error:", err);
+                statusEl.innerText = "Upload Failed!";
+            }
+        });
+    </script>
+</body>
